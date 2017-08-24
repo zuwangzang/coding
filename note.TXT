@@ -1,0 +1,148 @@
+
+######################################## Cloud Basic Introduction ######################################################################################
+ECM:
+
+image 文件
+
+
+
+云计算：云计算是一个模型
+
+QEMU 和 KVM搭配使用，KVM是基于linux内核的，QEMU -- machine  emulator
+
+爱立信产品用的是基于KVM的Hypervisor
+
+KVM支持所有OpenStack的组件
+
+KVM提供硬件(网络、计算...)资源的虚拟化，OpenStack管理这些虚拟资源并利用自身提供的接口向上建立虚机，可以管理虚机的生命周期以及虚机和资源的对应关系
+
+computer				nova
+
+storage					swift (objects -> 网盘) && cinder (block -> 移动硬盘,保存持久性的数据，commercial建议使用) && glance (images, 负责管理镜像文件)
+
+identity				keystone
+
+network					neutron
+
+orchestration		heat	a heat template describes the infrastructure for a cloud application
+
+ceilometer			is used to collect all the events of openstack, and it's used for data support for charging, monitoring and other services；性能监控
+
+keystone				提供访问认证的服务，这个访问认证是对内的，对内的意思就是说我们内部openstack或者CEE内部有一个租户或者是有一个用户要调用CEE或者openstack本身的资源，需要在keystone里面做一些认证
+
+ERICSSON:
+
+glance is mandatory
+swift && cinder is optional
+
+
+controller
+computer
+
+swift放在controller上，叫做快存，是一种对象存储；对象存储的概念就是说：相当于一个文件服务器一样，可以直接用，一个文件直接穿上去就OK了；swift和虚拟机不打交道，主要是给我们的CEE本身或者openstack本身提供存储的，比如说我们要装openstack对吧，这时候需要硬盘什么的这些存储资源，switft是给它服务的;swift可以是local，也可以是外接存储
+存储在controller & computer的称为临时存储
+存储在外接空间(cinder)的称为集中存储；cinder是block storage(块存储)，在存储前需要做一些额外的工作，比如要编一个自己的文件系统，类似于给你一块裸硬盘，要用它存东西，要有一个自己的操作系统；cinder等于是给虚拟机提供硬盘，cinder是给虚机服务的
+glance (image service)，给客户虚拟机提供一些镜像，这个镜像的后端是存在cinder中的，所以说部署了CEE之后如果没有cinder那么glance服务是没法用的
+
+在创建虚机时，如果从临时存储中启动 -> boot from image
+						，如果从集中存储启动   -> boot from volume
+						
+
+虚机的创建？？boot from image？boot from cinder？ detailed info!!
+
+
+
+
+Networking
+
+admin用于Linux OS installation through PXE
+public用于controller(通过外部网络访问controller)；floating IP用于VM(通过外部网络访问虚机)
+private & management & storage是基于vlan的，共享一个网口；其中management这个网络是负责openstack组件之间通信的
+
+
+
+Fuel是负责部署openstack环境的一个工具
+
+computer上面有hypervisor，它是提供虚拟化资源的，比如说创建虚机，用到的资源都是computer上面的，computer支持横向扩展，比如说创建虚机时资源不够了，可以再多创建几个computer
+
+hypervisor是实现了资源向虚拟化的手段，openstack向下可以管理这些资源，向上可以管理虚拟机的生命周期
+
+HW(computer & network & storage) -> Hepervisor(将硬件资源进行虚拟化) -> OpenStack (用来管理虚拟资源) -> 各种虚机
+
+iaas针对于创业公司
+paas针对于研发人员
+
+
+########################################### Qemu-KVM ######################################################################
+
+Qemu-KVM (hypervisor)是一门虚拟化技术，最主要的特点是开源、免费
+
+
+
+
+
+######################################## CEE 16A and R6 Arc ###############################################################
+
+NUMA的核心思想是内核本地化，不同的CPU，它们只访问离自己最近的内存
+
+DPDK：huge page提高内存访问性能；CPU亲和：一个网卡会绑定到一个物理CPU上；UIO使驱动工作在用户模式，对内核的调度大大减少
+
+
+
+
+############################################## Atlas ######################################################################
+
+Atlas provides a management interface for CEE through its GUI and CLI. (Heat && Orchestration && PM && FM)
+
+
+
+############################################# CEE Introduction ############################################################
+
+ETSI NFV REF ARCHITECTURE 横向分Service VNF and Infrustructure Description (业务网络域，也就是目前的电信网络) && VNF Management and Orchestrator (管理编排域)
+
+VNF Management and Orchestrator (MANO)分为三个实体: Virtualised Infrastructure Manager (VIM); VNF Manager (VNFM); Orchestrator
+
+VIM主要是对NFVI的管理 (openstack 实际上就是一个VIM)
+VFVM主要是对VNF的管理
+
+Ericsson:
+
+ECEE == NFVI + VIM
+ECM  == NFVO + VNFM
+VNF就是一个个的application
+
+CIC  == Cloud Infrastructure Controller
+
+Dashoard是集成在Atlas里面的
+
+Atlas会有两个openstack的组件，dashboard(horizon) && heat
+
+CEE is based on Mirantis OpenStack, as in Mirantis OpenStack, Fuel is used to deploy and manage the SW of the system.
+Fuel: Lifecycle Management
+
+Affinity / anti affinity are rules for which VMs must or must not be on the same blades at instantiation.
+
+理论上讲，假如没有外接磁盘阵列(EMC)，cinder存储是不支持的
+
+
+Atlas && ECM
+
+都可以进行管理和编排
+
+Atlas runs as a VM in CEE，是依附于CEE的存在而存在的
+ECM提供了一个更标准化的云管理
+
+
+############################################################ ECM Arch ####################################################
+
+OSS-RC是装在OSS服务器上的基于UNIX系统的爱立信操作应用软件(即集成CNA/OPS等工具的爱立信应用软件). [Operations Support System for Radio and Core (OSS-RC)]
+
+ETSI		NFV-MANO
+
+knowledge about redhat, f5 load balancer, zabbix, weblogic...
+
+
+########################################################### ECM HA #######################################################
+
+数据库采用Oracle RAC，提高稳定性
+
